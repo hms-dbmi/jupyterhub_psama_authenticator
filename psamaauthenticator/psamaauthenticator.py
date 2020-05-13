@@ -70,7 +70,7 @@ class PsamaAuthenticator(Authenticator):
     def get_handlers(self, app):
         native_handlers = [
             (r'/login', LoginHandler),
-            (r'/check_token', ForwardSessionInfo),
+            (r'/check_token', TokenValidateHandler),
         ]
         return native_handlers
 
