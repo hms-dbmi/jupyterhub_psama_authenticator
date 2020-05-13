@@ -8,7 +8,6 @@ from tornado import web
 from tornado.escape import url_escape
 from tornado.httputil import url_concat
 
-from .orm import UserInfo
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
