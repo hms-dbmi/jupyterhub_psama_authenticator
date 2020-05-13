@@ -1,42 +1,13 @@
-import bcrypt
-import dbm
-import os
-from datetime import datetime
 from jupyterhub.auth import Authenticator
-from pathlib import Path
 
-from sqlalchemy import inspect
 from tornado import gen
 from traitlets import Bool, Integer, Unicode
 
-from .handlers import (AuthorizationHandler, ChangeAuthorizationHandler,
-                       ChangePasswordHandler, LoginHandler, SignUpHandler)
-from .orm import UserInfo
+from .handlers import (LoginHandler, ForwardSessionInfo)
 
 
 class PsamaAuthenticator(Authenticator):
 
-    int_config_traitlet = Integer(
-        config=True,
-        default=0,
-        help="""
-        description goes here
-        """
-    )
-    bool_config_traitlet = Bool(
-        config=True,
-        default_value=True,
-        help="""
-        description goes here
-        """
-    )
-    str_config_traitlet = Unicode(
-        '',
-        config=True,
-        help="""
-        description goes here 
-        """
-    )
     psama_token_introspection_token = Unicode(
         '',
         config=True,
@@ -55,7 +26,7 @@ class PsamaAuthenticator(Authenticator):
         '',
         config=True,
         help="""
-        Path to store the db file of FirstUse with username / pwd hash in
+        Identifier for the Jupyterhub application inside PIC-SURE PSAMA
         """
     )
 
@@ -85,38 +56,10 @@ class PsamaAuthenticator(Authenticator):
             return username
 
     def get_user(self, username):
-        return UserInfo.find(self.db, self.normalize_username(username))
+        return None
 
     def user_exists(self, username):
         return self.get_user(username) is not None
-
-    def create_user(self, username, pw, **kwargs):
-        username = self.normalize_username(username)
-
-        if self.user_exists(username):
-            return
-
-        if not self.is_password_strong(pw) or \
-           not self.validate_username(username):
-            return
-
-        if not self.enable_signup:
-            return
-
-        encoded_pw = bcrypt.hashpw(pw.encode(), bcrypt.gensalt())
-        infos = {'username': username, 'password': encoded_pw}
-        infos.update(kwargs)
-        if username in self.admin_users or self.open_signup:
-            infos.update({'is_authorized': True})
-
-        try:
-            user_info = UserInfo(**infos)
-        except AssertionError:
-            return
-
-        self.db.add(user_info)
-        self.db.commit()
-        return user_info
 
     def validate_username(self, username):
         invalid_chars = [',', ' ']
@@ -127,16 +70,7 @@ class PsamaAuthenticator(Authenticator):
     def get_handlers(self, app):
         native_handlers = [
             (r'/login', LoginHandler),
-            (r'/signup', SignUpHandler),
-            (r'/authorize', AuthorizationHandler),
-            (r'/authorize/([^/]*)', ChangeAuthorizationHandler)
+            (r'/check_token', ForwardSessionInfo),
         ]
         return native_handlers
-
-    def delete_user(self, user):
-        user_info = self.get_user(user.name)
-        if user_info is not None:
-            self.db.delete(user_info)
-            self.db.commit()
-        return super().delete_user(user)
 
