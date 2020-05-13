@@ -3,7 +3,7 @@ from jupyterhub.auth import Authenticator
 from tornado import gen
 from traitlets import Bool, Integer, Unicode
 
-from .handlers import (LoginHandler, ForwardSessionInfo)
+from .handlers import (LoginHandler, TokenValidateHandler)
 
 
 class PsamaAuthenticator(Authenticator):
