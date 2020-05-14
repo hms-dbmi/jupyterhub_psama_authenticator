@@ -21,6 +21,19 @@ document.addEventListener('DOMContentLoaded', function() {
     })(), 25);
 
 
+    let show_error = function() {
+        let url = doc_el.location;
+        // delete the hidden token variable from the form
+        let token_el = doc_el.getElementById("psama-token-value");
+        token_el.parentElement.removeChild(token_el)
+        // change visual styling and form's submit process
+        doc_el.getElementById("psama-progressbar").style.backgroundColor = "red";
+        doc_el.getElementById("psama-login-form").action = url.origin + "{{psama_login_path}}" + "?redirection_url=" + url.pathname;
+        doc_el.getElementById("psama-login-form").method = "get"
+        doc_el.getElementById("psama-login-button").style.display = "";
+    };
+
+
     // show warning and force manual login if not serving via HTTPS
     let manual_login = false;
     if (doc_el.location.protocol !== "https:") {
@@ -32,18 +45,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // process the PIC-SURE PSAMA session token
-    let show_error = function() {
-        let url = doc_el.location;
-        // delete the hidden token variable from the form
-        let token_el = doc_el.getElementById("psama-token-value");
-        token_el.parentElement.removeChild(token_el)
-        // change visual styling and form's submit process
-        doc_el.getElementById("psama-progressbar").style.backgroundColor = "red";
-        doc_el.getElementById("psama-login-form").action = url.origin + "{{psama_url_path}}" + "?redirection_url=" + url.pathname;
-        doc_el.getElementById("psama-login-form").method = "get"
-        doc_el.getElementById("psama-login-button").style.display = "";
-    };
-
     try {
         let temp = JSON.parse(sessionStorage.session);
         if (temp.token) {
@@ -110,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% block login %}
 <div id="login-main" class="container">
-    <form name="psama-login-form" method="post" role="form">
+    <form name="psama-login-form" id="psama-login-form" method="post" role="form">
         <div class="auth-form-header">
             Checking Security Credentials
         </div>

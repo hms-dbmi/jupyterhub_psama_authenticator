@@ -9,24 +9,33 @@ from .handlers import (LoginHandler, TokenValidateHandler)
 class PsamaAuthenticator(Authenticator):
 
     psama_token_introspection_token = Unicode(
-        '',
+        "",
         config=True,
         help="""
         The secret token used by this authenticator to allow it to properly call the token introspection endpoint  
         """
     )
-    psama_token_introspection_endpoint = Unicode(
-        '',
+    psama_token_introspection_path = Unicode(
+        "/psama/token/inspect",
         config=True,
         help="""
-        The endpoint to call for token introspection IE. "http(s)://hostname/token/inspect"
+        The endpoint to call for token introspection.
         """
     )
     psama_application_id = Unicode(
-        '',
+        "",
         config=True,
         help="""
         Identifier for the Jupyterhub application inside PIC-SURE PSAMA
+        """
+    )
+
+    psama_login_path = Unicode(
+        "/psamaui/login/",
+        config=True,
+        help="""
+        This is the path component of a URL that is used to access the PIC-SURE PSAMA process.
+        It is suffixed with "?redirection_url={{automatically_set}}".        
         """
     )
 
