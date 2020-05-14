@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     } catch(e) {
         window.document.getElementById("login-message").textContent = "Session information was not found";
-        error_display()
+        show_error()
         // automatically transfer back to PSAMA for login
         setTimeout(function(){
             window.document.getElementById("psama-login-form").submit();
