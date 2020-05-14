@@ -3,6 +3,7 @@
 <script type="text/javascript">
 document.addEventListener('DOMContentLoaded', function() {
     let doc_el = window.document;
+
     // UI eye candy (progress bar)
     let tmr_id = setInterval((function(){
         // closure variables
@@ -20,8 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }).bind(document.getElementById("psama-progressbar"));
     })(), 25);
 
-
-    let show_error = function() {
+    // code to style the progress bar as an error
+    window.show_error = function() {
         let url = doc_el.location;
         // delete the hidden token variable from the form
         let token_el = doc_el.getElementById("psama-token-value");
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
         doc_el.getElementById("psama-login-form").action = url.origin + "{{psama_login_path}}" + "?redirection_url=" + url.pathname;
         doc_el.getElementById("psama-login-form").method = "get"
         doc_el.getElementById("psama-login-button").style.display = "";
+        clearTimeout(tmr_id);
     };
 
 
@@ -38,8 +40,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let manual_login = false;
     if (doc_el.location.protocol !== "https:") {
         manual_login = true;
-        doc_el.getElementById("login-message").textContent = "Warning: JupyterHub seems to be served over an unsecured HTTP connection. We strongly recommend enabling HTTPS for JupyterHub."
-        show_error()
+        let temp_el = doc_el.getElementById("login-message")
+        temp_el.textContent = "Warning: JupyterHub seems to be served over an unsecured HTTP connection. We strongly recommend enabling HTTPS for JupyterHub.";
+        temp_el.style.display = "";
+        window.show_error();
         doc_el.getElementById("psama-progressbar").style.backgroundColor = "yellow";
     }
 
@@ -62,16 +66,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 xhr.onload = function () {
                     // finish login process
                     if (xhr.status !== 200) {
-                        window.document.getElementById("login-message").textContent = "Transport failed during token validation.  Returned status of " + xhr.status;
-                        show_error()
+                        let temp_el = window.document.getElementById("login-message")
+                        temp_el.textContent = "Transport failed during token validation.  Returned status of " + xhr.status;
+                        temp_el.style.display = "";
+                        window.show_error();
                     } else {
                         // validate the return for server error
                         try {
                             let temp = JSON.parse(xhr.responseText)
                             if (temp.error) {
                                 // display the error message from the server
-                                window.document.getElementById("login-message").textContent = temp.msg;
-                                show_error()
+                                let temp_el = window.document.getElementById("login-message")
+                                temp_el.textContent = temp.msg;
+                                temp_el.style.display = "";
+                                window.show_error();
                             } else {
                                 // successful message
                                 if (temp.valid === true) {
@@ -82,8 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     }, 250);
                                 } else {
                                     // the token is invalid
-                                    show_error()
-                                    window.document.getElementById("login-message").style.display = "none";
+                                    window.show_error();
                                     // automatically transfer back to PSAMA for login
                                     setTimeout(function () {
                                         window.document.getElementById("psama-login-form").submit();
@@ -91,8 +98,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                             }
                         } catch (e) {
-                            window.document.getElementById("login-message").textContent = "Invalid server response.";
-                            show_error()
+                            let temp_el = window.document.getElementById("login-message")
+                            temp_el.textContent = "Invalid server response.";
+                            temp_el.style.display = "";
+                            window.show_error();
                         }
                     }
                 };
@@ -100,8 +109,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     } catch(e) {
-        window.document.getElementById("login-message").textContent = "Session information was not found";
-        show_error()
+        let temp_el = window.document.getElementById("login-message")
+        temp_el.textContent = "Session information was not found.";
+        temp_el.style.display = "";
+        window.show_error();
         // automatically transfer back to PSAMA for login
         setTimeout(function(){
             window.document.getElementById("psama-login-form").submit();
@@ -116,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
             Checking Security Credentials
         </div>
         <div class="auth-form-body">
-            <p id="login-message" style="display:hidden"></p>
+            <p id="login-message" style="display:none"></p>
             <label>Progress...</label>
             <div style="border:1px solid black;width:100%;">
                 <div id="psama-progressbar" class="btn-jupyter" style="height:14px;width:1%;opacity:0.5;background-color:grey"></div>

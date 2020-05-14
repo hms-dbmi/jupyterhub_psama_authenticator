@@ -33,7 +33,7 @@ class TokenValidateHandler(LocalBase):
     """
     async def post(self):
         self._register_template_path()
-        self.write('{"error":"true", "error_msg":"this service is not yet finished"}')
+        self.write('{"error":"true", "msg":"this service is not yet finished"}')
 
 
 class LoginHandler(LoginHandler, LocalBase):
@@ -41,5 +41,6 @@ class LoginHandler(LoginHandler, LocalBase):
     def _render(self, login_error=None, username=None):
         self._register_template_path()
         return self.render_template(
-            'token_extract_and_forward.html'
+            'token_extract_and_forward.html',
+            psama_login_path=self.authenticator.psama_login_path
         )
