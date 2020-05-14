@@ -30,9 +30,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // change visual styling and form's submit process
         doc_el.getElementById("psama-progressbar").style.backgroundColor = "red";
         doc_el.getElementById("psama-login-form").action = url.origin + "{{psama_login_path}}" + "?redirection_url=" + url.pathname;
-        doc_el.getElementById("psama-login-form").method = "get"
         doc_el.getElementById("psama-login-button").style.display = "";
-        clearTimeout(tmr_id);
+        // clearTimeout(tmr_id);
     };
 
 
@@ -102,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             temp_el.textContent = "Invalid server response.";
                             temp_el.style.display = "";
                             window.show_error();
+                            window.document.getElementById("psama-progressbar").style.width = "100%";
                         }
                     }
                 };
