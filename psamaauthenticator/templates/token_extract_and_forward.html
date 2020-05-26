@@ -26,12 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
         let url = doc_el.location;
         // delete the hidden token variable from the form
         let token_el = doc_el.getElementById("psama-token-value");
-        token_el.parentElement.removeChild(token_el)
+        if (token_el) token_el.parentElement.removeChild(token_el);
         // change visual styling and form's submit process
         doc_el.getElementById("psama-progressbar").style.backgroundColor = "red";
         doc_el.getElementById("psama-login-form").action = url.origin + "{{psama_login_path}}" + "?redirection_url=" + url.pathname;
         doc_el.getElementById("psama-login-button").style.display = "";
-        // clearTimeout(tmr_id);
+        //clearTimeout(tmr_id);
     };
 
 
@@ -82,15 +82,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             } else {
                                 // successful message
                                 if (temp.valid === true) {
-                                    // the token is still valid
-                                    window.document.getElementById("psama-progressbar").style.backgroundColor = "green";
+                                    // the token is valid
                                     setTimeout(function () {
                                         window.document.getElementById("psama-login-form").submit();
                                     }, 250);
                                 } else {
                                     // the token is invalid
-                                    window.show_error();
                                     // automatically transfer back to PSAMA for login
+                                    window.document.getElementById("psama-login-form").action = url.origin + "{{psama_login_path}}" + "?redirection_url=" + url.pathname;
                                     setTimeout(function () {
                                         window.document.getElementById("psama-login-form").submit();
                                     }, 250);
@@ -101,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             temp_el.textContent = "Invalid server response.";
                             temp_el.style.display = "";
                             window.show_error();
-                            window.document.getElementById("psama-progressbar").style.width = "100%";
                         }
                     }
                 };
@@ -134,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
         <input type="hidden" name="session_token" id="psama-token-value">
-        <input type="submit" style="display:none" id="psama-login-button" class="btn btn-jupyter" value="Sign In" tabindex="3" />
+        <input type="submit" style="display:none" id="psama-login-button" class="btn btn-jupyter" value="To Login Page" tabindex="3" />
     </form>
 </div>
 {% endblock login %}

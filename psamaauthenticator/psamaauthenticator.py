@@ -1,10 +1,12 @@
 from jupyterhub.auth import Authenticator
 
 from tornado import gen
+from tornado.httpclient import AsyncHTTPClient
 from traitlets import Bool, Integer, Unicode
 
 from .handlers import (LoginHandler, TokenValidateHandler)
 
+import json
 
 class PsamaAuthenticator(Authenticator):
 
@@ -15,8 +17,8 @@ class PsamaAuthenticator(Authenticator):
         The secret token used by this authenticator to allow it to properly call the token introspection endpoint  
         """
     )
-    psama_token_introspection_path = Unicode(
-        "/psama/token/inspect",
+    psama_token_introspection_url = Unicode(
+        "http://localhost/psama/token/inspect",
         config=True,
         help="""
         The endpoint to call for token introspection.
@@ -44,37 +46,41 @@ class PsamaAuthenticator(Authenticator):
 
     @gen.coroutine
     def authenticate(self, handler, data):
-        username = self.normalize_username(data['username'])
-        password = data['password']
 
-        user = self.get_user(username)
-        if not user:
-            return
+        usr_token = data['session_token']
+        http_client = AsyncHTTPClient()
 
-        if self.allowed_failed_logins:
-            if self.is_blocked(username):
-                return
+        try:
+            response = yield http_client.fetch(
+                self.psama_token_introspection_url,
+                method="POST",
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + self.psama_token_introspection_token
+                },
+                body = json.dumps({"token": usr_token})
+            )
 
-        validations = [
-            user.is_authorized,
-            user.is_valid_password(password)
-        ]
+            ret_msg = response.body if isinstance(response.body, str) \
+            else response.body.decode()
 
-        if all(validations):
-            self.successful_login(username)
-            return username
+            auth_result = json.loads(ret_msg)
+            if auth_result['active']:
+                if len(auth_result['privileges']) > 0:
+                    username = auth_result['email'].replace("@", "~")
+                    self.log.info("Passed Authentication for " + username )
+                    return username
 
-    def get_user(self, username):
+        except Exception as e:
+            self.log.error(type(e))    # the exception instance
+            self.log.error(e.args)     # arguments stored in .args
+            self.log.error(e)          # __str__ allows args to be printed directly,
+
+
+        # user is not authorized or an error occured, do not login
+        self.log.error("Authentication failed")
         return None
 
-    def user_exists(self, username):
-        return self.get_user(username) is not None
-
-    def validate_username(self, username):
-        invalid_chars = [',', ' ']
-        if any((char in username) for char in invalid_chars):
-            return False
-        return super().validate_username(username)
 
     def get_handlers(self, app):
         native_handlers = [
