@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // process the PIC-SURE PSAMA session token
     try {
+        let url = doc_el.location;
         let temp = JSON.parse(sessionStorage.session);
         if (temp.token) {
             let psama_token = temp.token;
@@ -67,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (xhr.status !== 200) {
                         let temp_el = window.document.getElementById("login-message")
                         temp_el.textContent = "Transport failed during token validation.  Returned status of " + xhr.status;
-                        temp_el.style.display = "";
                         window.show_error();
                     } else {
                         // validate the return for server error
@@ -107,14 +107,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     } catch(e) {
-        let temp_el = window.document.getElementById("login-message")
-        temp_el.textContent = "Session information was not found.";
-        temp_el.style.display = "";
-        window.show_error();
         // automatically transfer back to PSAMA for login
+        let url = doc_el.location;
+        window.document.getElementById("psama-login-form").action = url.origin + "{{psama_login_path}}" + "?redirection_url=" + url.pathname;
         setTimeout(function(){
             window.document.getElementById("psama-login-form").submit();
-        }, 5000);
+        }, 250);
     }
 });
 </script>
