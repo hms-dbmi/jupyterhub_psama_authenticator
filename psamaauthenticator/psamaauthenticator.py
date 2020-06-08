@@ -1,12 +1,11 @@
-from jupyterhub.auth import Authenticator
-
+import json
+from traitlets import Bool, Integer, Unicode
 from tornado import gen
 from tornado.httpclient import AsyncHTTPClient
-from traitlets import Bool, Integer, Unicode
+from jupyterhub.auth import Authenticator
+from jupyterhub.utils import url_path_join
 
-from .handlers import (LoginHandler, TokenValidateHandler)
-
-import json
+from .handlers import (PsamaLoginHandler, PsamaLogoutHandler, TokenValidateHandler)
 
 class PsamaAuthenticator(Authenticator):
 
@@ -44,48 +43,19 @@ class PsamaAuthenticator(Authenticator):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @gen.coroutine
-    def authenticate(self, handler, data):
+    def auto_login(self):
+        return False
 
-        usr_token = data['session_token']
-        http_client = AsyncHTTPClient()
+    def login_url(self, base_url):
+        return url_path_join(base_url, 'psama_login')
 
-        try:
-            response = yield http_client.fetch(
-                self.psama_token_introspection_url,
-                method="POST",
-                headers = {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + self.psama_token_introspection_token
-                },
-                body = json.dumps({"token": usr_token})
-            )
-
-            ret_msg = response.body if isinstance(response.body, str) \
-            else response.body.decode()
-
-            auth_result = json.loads(ret_msg)
-            if auth_result['active']:
-                if len(auth_result['privileges']) > 0:
-                    username = auth_result['email'].replace("@", "~")
-                    self.log.info("Passed Authentication for " + username )
-                    return username
-
-        except Exception as e:
-            self.log.error(type(e))    # the exception instance
-            self.log.error(e.args)     # arguments stored in .args
-            self.log.error(e)          # __str__ allows args to be printed directly,
-
-
-        # user is not authorized or an error occured, do not login
-        self.log.error("Authentication failed")
-        return None
-
-
+#    def logout_url(self, base_url):
+#        return url_path_join(base_url, 'psama_logout')
+ 
     def get_handlers(self, app):
-        native_handlers = [
-            (r'/login', LoginHandler),
+        return [
+            (r'/psama_login', PsamaLoginHandler),
+            (r'/logout', PsamaLogoutHandler),
             (r'/check_token', TokenValidateHandler),
         ]
-        return native_handlers
 

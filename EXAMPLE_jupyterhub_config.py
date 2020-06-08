@@ -44,7 +44,6 @@ c.JupyterHub.hub_port = 8081
 c.JupyterHub.base_url = '/jupyterhub'
 
 
-#c.JupyterHub.authenticator_class = 'jupyterhub.auth.DummyAuthenticator'
 from psamaauthenticator.psamaauthenticator import PsamaAuthenticator
 c.JupyterHub.authenticator_class = PsamaAuthenticator
 

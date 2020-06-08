@@ -1,0 +1,59 @@
+{% extends "page.html" %}
+{% block main %}
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+
+    // UI eye candy (progress bar)
+    let tmr_id = setInterval((function(){
+        // closure variables
+        let bar_val = 5;
+
+        // returned timer handler
+        return (function() {
+            if (bar_val < 95) {
+                // approx. log deceleration
+                bar_val = bar_val + ((100 - bar_val) / 20);
+                this.style.width = bar_val + "%";
+            } else {
+                clearTimeout(tmr_id);
+                this.style.width = "100%";
+                let doc_el = window.document;
+                doc_el.getElementById("psama-progressbar").style.backgroundColor = "green";
+                // setup the form to do login and display login button
+                let login_url = doc_el.location.href.split("/");
+                login_url.pop();
+                login_url.pop();
+                login_url = login_url.join("/");
+//                doc_el.getElementById("psama-login-form").action = login_url;
+                doc_el.getElementById("psama-login-button").style.display = "";
+                doc_el.getElementById("psama-status").textContent = "Success";
+            }
+        }).bind(document.getElementById("psama-progressbar"));
+    })(), 25);
+
+
+    // clear the PSAMA token
+    sessionStorage.clear()
+});
+</script>
+<div id="login-main" class="container">
+    <form name="psama-login-form" id="psama-login-form" method="get" role="form" action="{{jupyter_login_path}}">
+        <div class="auth-form-header">
+            Log Out
+        </div>
+        <div class="auth-form-body">
+            <label id="psama-status">Progress...</label>
+            <div style="border:1px solid black;width:100%;">
+                <div id="psama-progressbar" class="btn-jupyter" style="height:14px;width:1%;opacity:0.5;background-color:grey"></div>
+            </div>
+        </div>
+        <div style="height:40px">
+            <input type="submit" style="display:none" id="psama-login-button" class="btn btn-jupyter" value="To Login Page" tabindex="3" />
+        </div>
+    </form>
+</div>
+{% endblock main %}
+{% block script %}
+{{ super() }}
+<script></script>
+{% endblock %}
