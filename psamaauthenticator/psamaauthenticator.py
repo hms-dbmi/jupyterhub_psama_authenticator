@@ -23,14 +23,6 @@ class PsamaAuthenticator(Authenticator):
         The endpoint to call for token introspection.
         """
     )
-    psama_application_id = Unicode(
-        "",
-        config=True,
-        help="""
-        Identifier for the Jupyterhub application inside PIC-SURE PSAMA
-        """
-    )
-
     psama_login_path = Unicode(
         "/psamaui/login/",
         config=True,
