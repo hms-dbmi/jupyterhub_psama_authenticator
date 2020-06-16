@@ -43,9 +43,6 @@ class PsamaLoginHandler(LoginHandler, LocalBase):
     
     @gen.coroutine
     def authenticate(self, data):
-        self.log.error("AUTHENTICATE ROUTINE")
-        self.log.info(data)
-
         usr_token = data['session_token']
         http_client = AsyncHTTPClient()
 
@@ -69,6 +66,8 @@ class PsamaLoginHandler(LoginHandler, LocalBase):
                     username = auth_result['email'].replace("@", "~")
                     self.log.info("Passed Authentication for " + username )
                     return username
+                else:
+                    self.log.error("No permissions for user " + username )
 
         except Exception as e:
             self.log.error(type(e))    # the exception instance
@@ -123,7 +122,10 @@ class TokenValidateHandler(LocalBase):
             if auth_result['active']:
                 if len(auth_result['privileges']) > 0:
                     return_msg['valid'] = True
-            
+                else:
+                    return_msg['error'] = True
+                    return_msg['msg'] = "You do not have permissions to access Jupyterhub."
+
         except Exception as e:
             self.log.error(type(e))    # the exception instance
             self.log.error(e.args)     # arguments stored in .args
